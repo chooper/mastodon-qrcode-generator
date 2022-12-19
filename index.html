@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>Mastodon link generator</title>
+        <meta charset="UTF-8">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+        <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap-theme.min.css" integrity="sha384-6pzBo3FDv/PJ8r2KRkGHifhEocL+1X2rVCTTkUfGk7/0pbek5mMa1upzvWbrUbOZ" crossorigin="anonymous"> -->
+    </head>
+    <body>
+        <div style="margin-left: auto; margin-right: auto; width: 40%">
+            <h1>Mastodon link QR code generator</h1> 
+            <p>Enter your Mastodon username below to generate a QR code linking to your profile.</p>
+
+            <form>
+                <input type="text" id="username"/>
+                <input type="submit" id="button"/>
+            </form>
+        </div>
+        <br/>   
+        <div class="demo" id="demo" style="width: 300px; margin-left: auto; margin-right: auto;">
+        </div>
+
+        <img src="mastodon_logo.png" id="logo" style="display: none;"/>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.min.js"></script>
+        <script src="kjua.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script>
+            function usernameToURL(name) {
+                // @sub@mastodon.social
+                // TODO: check formatting
+                name = name.trim();
+                if (name[0] === "@") {
+                    name = name.slice(1);
+                }
+
+                var chunks = name.split("@");
+                var ident = chunks[0];
+                var domain = chunks[1];
+
+                var result = "https://" + domain + "/@" + ident;
+                return result;
+            }
+
+            function update() {
+                var container = document.getElementById("demo");
+                $(".demo").empty();
+                console.debug(demo);
+                var logo = document.getElementById("logo");
+                var username = document.getElementById("username");
+                console.debug(username);
+                $(".demo").kjua({
+                    // render method: 'canvas', 'image' or 'svg'
+                    render: 'image',
+
+                    // render pixel-perfect lines
+                    crisp: true,
+
+                    // minimum version: 1..40
+                    minVersion: 1,
+
+                    // error correction level: 'L', 'M', 'Q' or 'H'
+                    ecLevel: 'H',
+
+                    // size in pixel
+                    size: 300,
+
+                    // pixel-ratio, null for devicePixelRatio
+                    ratio: null,
+
+                    // code color
+                    fill: '#000',
+
+                    // background color
+                    back: '#fff',
+
+                    // content
+                    text: usernameToURL(username.value),
+
+                    // roundend corners in pc: 0..100
+                    rounded: 0,
+
+                    // quiet zone in modules
+                    quiet: 0,
+
+                    // modes: 'plain', 'label' or 'image'
+                    mode: 'image',
+
+                    // label/image size and pos in pc: 0..100
+                    mSize: 45,
+                    mPosX: 50,
+                    mPosY: 50,
+
+                    // label
+                    label: username.value,
+                    fontname: 'sans',
+                    fontcolor: '#333',
+
+                    // image element
+                    image: logo
+                });
+
+                return false;
+            }
+            $(window).ready(function() {                
+                var button = document.getElementById("button");
+                //button.onclick = function() { return update(); };
+                button.onclick = update;
+            });
+        </script>
+    </body>
+</html>
