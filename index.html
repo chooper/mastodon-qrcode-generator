@@ -3,7 +3,8 @@
     <head>
         <title>Mastodon link generator</title>
         <meta charset="UTF-8">
-
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
         <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap-theme.min.css" integrity="sha384-6pzBo3FDv/PJ8r2KRkGHifhEocL+1X2rVCTTkUfGk7/0pbek5mMa1upzvWbrUbOZ" crossorigin="anonymous"> -->
     </head>
@@ -16,22 +17,57 @@
                 <input type="text" id="username"/>
                 <input type="submit" id="button"/>
             </form>
+            <br/>
+            <div class="alert alert-danger" id="alert" role="alert" style="display: none;">
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                <span class="sr-only">Error:</span>
+                Please enter a valid username such as <em>@Mastodon@mastodon.social</em>
+            </div>
         </div>
         <br/>   
         <div class="demo" id="demo" style="width: 300px; margin-left: auto; margin-right: auto;">
         </div>
+        <br/>
+        <div class="footer" id="footer" style="margin-left: auto; margin-right: auto; width: 40%">
+            <p style="text-align: center;"><a href="https://github.com/chooper/mastodon-qrcode-generator">Github</a> | Project by <a href="https://mastodon.social/@chooper">@chooper@mastodon.social</a></p>
+        </div>
 
+        <!-- load the mastodon logo for use in the QR code -->
         <img src="mastodon_logo.png" id="logo" style="display: none;"/>
 
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.min.js"></script>
         <script src="kjua.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script>
+            function showAlert() {
+                var alert = document.getElementById("alert");
+                alert.style.display = "block";
+            }
+
+            function hideAlert() {
+                var alert = document.getElementById("alert");
+                alert.style.display = "none";
+            }
+            
+            function isValidUsername(name) {
+                // e.g. @sub@mastodon.social
+                name = name.trim();
+
+                var validationRegex = /^(@?)([A-Za-z0-9_]+)@([A-Za-z0-9\.\-]+)$/gm;
+                return validationRegex.test(name);
+            }
+
             function usernameToURL(name) {
-                // @sub@mastodon.social
-                // TODO: check formatting
+                // e.g. @sub@mastodon.social
+                // the leading @ is stripped
+                
                 name = name.trim();
                 if (name[0] === "@") {
                     name = name.slice(1);
+                }
+
+                if (isValidUsername(name) === false) {
+                    showAlert();
+                    return false;
                 }
 
                 var chunks = name.split("@");
@@ -45,10 +81,16 @@
             function update() {
                 var container = document.getElementById("demo");
                 $(".demo").empty();
-                console.debug(demo);
+                hideAlert();
+
                 var logo = document.getElementById("logo");
                 var username = document.getElementById("username");
-                console.debug(username);
+
+                var userUrl = usernameToURL(username.value);
+                if (userUrl === false) {
+                    return false;
+                }
+
                 $(".demo").kjua({
                     // render method: 'canvas', 'image' or 'svg'
                     render: 'image',
@@ -92,7 +134,7 @@
                     mPosY: 50,
 
                     // label
-                    label: username.value,
+                    label: userUrl,
                     fontname: 'sans',
                     fontcolor: '#333',
 
@@ -102,9 +144,9 @@
 
                 return false;
             }
+
             $(window).ready(function() {                
                 var button = document.getElementById("button");
-                //button.onclick = function() { return update(); };
                 button.onclick = update;
             });
         </script>
